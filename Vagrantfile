@@ -433,6 +433,7 @@ Vagrant.configure(2) do |config|
   end
 
   machine_types.each do |name, machine_type|
+      
     config.vm.define name do |machine|
       machine.vm.hostname = "#{name}.dcos"
 
@@ -475,7 +476,6 @@ Vagrant.configure(2) do |config|
           v.customize ['storagectl', :id, '--name', 'SATA Controller', '--add', 'sata', '--controller', 'IntelAHCI']
           v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 0, '--device', 0, '--type', 'hdd', '--medium', machine_type['disk_path']]
         end
-
       end
 
       # Hack to remove loopback host alias that conflicts with vagrant-hostmanager
@@ -511,6 +511,10 @@ Vagrant.configure(2) do |config|
           vm.name = 'Install Mesos Memory Modifier'
           vm.path = provision_script_path('install-mesos-memory')
         end
+      end
+
+      if machine_type['type'] == 'master'
+        config.vm.network "forwarded_port", host: 8080, guest: 80, auto_correct: true
       end
 
       if user_config.private_registry
